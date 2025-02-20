@@ -2,47 +2,51 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
+
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $users = User::with('posts')->get(); 
+        return response()->json([
+            'data' => $users,
+        ],200);
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(StoreUserRequest $request)
     {
-        //
+    $user = User::create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'password' => bcrypt($request->password),
+    ]);
+
+    return response()->json([
+        'status' => 201,
+        'data' => $user,
+    ], 201);
     }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+public function show(User $user)
     {
-        //
+    return response()->json([
+        'data' => $user->load('posts'),
+    ],200);
     }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+public function update(UpdateUserRequest $request, User $user)
     {
-        //
+    $user->update($request->validated());
+    return response()->json([
+        'data' => $user,
+    ],200);
     }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(User $user)
     {
-        //
+        $user->delete();
+        return response()->json([
+        ],200);
     }
 }
